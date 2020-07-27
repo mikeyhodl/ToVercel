@@ -1,0 +1,836 @@
+---
+layout: page
+title: Scoutr - Beta
+subtitle: Live media by geolocation
+permalink: /scoutr/
+featured_image: /images/demo/scoutr.jpg
+---
+<link href="//cdn.jsdelivr.net/npm/featherlight@1.7.14/release/featherlight.min.css" type="text/css" rel="stylesheet" />
+<link rel="stylesheet" href="/css/animate.css">
+<style>
+    .firsth2 {
+        margin-top: 0px;
+    }
+
+    #map {
+        width: 100%;
+        height: 300px;
+    }
+
+    .searchBoxes {
+        width: 100%;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+
+    .radius {
+        width: 10%;
+    }
+
+    .addressInput {
+        width: 68%;
+    }
+
+    /* The container */
+    .container {
+        display: block;
+        position: relative;
+        padding-left: 35px;
+        margin: 20px 20px 20px 0px;
+        cursor: pointer;
+        font-size: 22px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /* Hide the browser's default checkbox */
+    .container input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+    /* Create a custom checkbox */
+    .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 25px;
+        width: 25px;
+        background-color: #eee;
+    }
+
+    /* On mouse-over, add a grey background color */
+    .container:hover input~.checkmark {
+        background-color: #ccc;
+    }
+
+    /* When the checkbox is checked, add a blue background */
+    .container input:checked~.checkmark {
+        background-color: #505a65;
+    }
+
+    /* Create the checkmark/indicator (hidden when not checked) */
+    .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+    }
+
+    /* Show the checkmark when checked */
+    .container input:checked~.checkmark:after {
+        display: block;
+    }
+
+    /* Style the checkmark/indicator */
+    .container .checkmark:after {
+        left: 9px;
+        top: 5px;
+        width: 5px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 3px 3px 0;
+        -webkit-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        transform: rotate(45deg);
+    }
+
+    .terms {
+        display: flex;
+
+        flex-wrap: wrap;
+        width: 100%;
+        justify-content: space-evenly;
+        margin-top: 30px;
+    }
+
+
+
+    .marker {
+        position: absolute;
+        z-index: 0;
+        left: 50%;
+        top: 50%;
+        margin-left: -12px;
+        margin-top: -27px;
+
+    }
+
+    .pulse {
+        display: block;
+        width: 22px;
+        height: 22px;
+        border-radius: 100% 100% 0% 100%;
+        background: #505a65;
+        cursor: pointer;
+        box-shadow: 0 0 0 0 rgba(46, 46, 45, 0.4);
+        animation: pulse 3s infinite;
+        transform: rotate(45deg);
+    }
+
+    .units .container {
+        margin: 8px 20px 8px 0px;
+    }
+
+    .selectControls {
+        float: right;
+        margin-right: 25px;
+    }
+
+    .selectControls span:hover {
+        cursor: pointer;
+        color: #2196F3;
+    }
+
+    .results {
+        column-count: 3;
+        margin-top: 30px;
+        flex-direction: column;
+        -webkit-column-break-inside: avoid;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-top: 30px;
+    }
+
+
+    .grid-item {
+        max-width: 290px;
+        width: 100%;
+    }
+
+    .tweet_card {
+        position: relative;
+        border-radius: 2px;
+        -webkit-box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+        margin: 0 0 20px 0;
+        -webkit-column-break-inside: avoid;
+        /* Chrome, Safari, Opera */
+        page-break-inside: avoid;
+        /* Firefox */
+        break-inside: avoid;
+        /* IE 10+ */
+    }
+
+    .tweet_card:hover {
+        -webkit-transition: -webkit-box-shadow .25s;
+        transition: -webkit-box-shadow .25s;
+        transition: box-shadow .25s;
+        transition: box-shadow .25s, -webkit-box-shadow .25s;
+    }
+
+
+    .tweet_media {
+        background-size: cover;
+        background-position: center center;
+        width: 100%;
+        position: relative;
+        height: 300px;
+    }
+
+    .tweet_author {
+        display: block;
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        color: #ffffff;
+        background-color: #333333;
+    }
+
+
+    .tweet_info {
+        padding: 20px;
+        width: 100%;
+        font-size: 12px;
+        line-height: 17px;
+        border-bottom: 1px solid #efefef;
+        border-top: 1px solid #efefef;
+        background-color: rgb(238, 238, 238);
+    }
+
+    .tweet_info a {
+        color: #6C7A89;
+    }
+
+    .tweet_info a:hover {
+        color: #6C7A89;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .tweet_icon {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 100%;
+        color: #2a2f36;
+        right: 10px;
+    }
+
+    .tweet_user {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #e3e3e3;
+        border-top: 1px solid #e3e3e3;
+        padding: 10px 20px;
+    }
+
+    .tweet_profilephoto {
+        margin-right: 15px;
+    }
+
+    .tweet_username {
+        font-size: 14px;
+    }
+
+    .hero {
+        overflow: hidden !important;
+        min-height: 350px;
+    }
+
+    .single-post {
+        z-index: 99;
+    }
+
+    .button {
+        background-color: #505a65;
+        border: #505a65
+    }
+
+    .button:hover {
+        background-color: #505a65;
+        border: #505a65;
+    }
+
+    #particles-js {
+        background-color: rgba(80, 90, 101, 0.4);
+    }
+
+    .hero .wrap {
+        z-index: 9;
+        text-shadow: 1px 1px 2px rgba(150, 150, 150, 1);
+    }
+
+    .submitloader {
+        display: flex;
+        align-items: center;
+    }
+
+    .submitloader .button {
+        margin-right: 30px;
+    }
+
+    .loaders {
+        border: 16px solid #f3f3f3;
+        /* Light grey */
+        border-top: 16px solid #505a65;
+        /* Blue */
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 2s linear infinite;
+    }
+
+    .extra_media {
+        padding: 8px 0px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: -40px;
+    }
+
+    .tweet_tiny_media {
+        width: 60px;
+        height: 60px;
+        background-size: cover;
+        margin-right: 10px;
+        position: relative;
+        transition: transform .2s;
+        border: 4px solid white;
+        border-radius: 5px;
+    }
+
+    .tweet_tiny_media:hover {
+        -webkit-box-shadow: 6px 6px 5px 0px rgba(0, 0, 0, 0.75);
+        -moz-box-shadow: 6px 6px 5px 0px rgba(0, 0, 0, 0.75);
+        box-shadow: 6px 6px 5px 0px rgba(0, 0, 0, 0.75);
+        transform: scale(1.1)
+    }
+
+    .shareURL {
+        margin-top: 30px;
+    }
+
+    .noresult {
+        margin-bottom: 100px !important;
+        margin-top: 100px !important;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @media only screen and (max-width: 800px) {
+        .searchBoxes {
+            width: 100%;
+            display: block;
+            margin-top: 20px;
+        }
+
+        .radius {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .addressInput {
+            width: 100%;
+        }
+
+        .selectControls {
+            float: none;
+            margin-right: 0px;
+            text-align: center;
+            width: 100%;
+            margin: 30px 0px 20px 0px;
+        }
+
+        .results {
+            column-count: 2;
+            margin-top: 30px;
+        }
+    }
+
+    @media only screen and (max-width: 500px) {
+
+        .results {
+            column-count: 1;
+            margin-top: 30px;
+        }
+    }
+
+
+    @-webkit-keyframes pulse {
+        0% {
+            -webkit-box-shadow: 0 0 0 0 rgba(80, 90, 101, 0.4);
+        }
+
+        70% {
+            -webkit-box-shadow: 0 0 0 300px rgba(80, 90, 101, 0);
+        }
+
+        100% {
+            -webkit-box-shadow: 0 0 0 0 rgba(80, 90, 101, 0);
+        }
+    }
+
+    @keyframes pulse {
+        0% {
+            -moz-box-shadow: 0 0 0 0 rgba(80, 90, 101, 0.4);
+            box-shadow: 0 0 0 0 rgba(80, 90, 101, 0.4);
+        }
+
+        70% {
+            -moz-box-shadow: 0 0 0 300px rgba(80, 90, 101, 0);
+            box-shadow: 0 0 0 300px rgba(80, 90, 101, 0);
+        }
+
+        100% {
+            -moz-box-shadow: 0 0 0 0 rgba(80, 90, 101, 0);
+            box-shadow: 0 0 0 0 rgba(80, 90, 101, 0);
+        }
+    }
+</style>
+
+<div class="scoutr" ng-app="scoutr" ng-controller="scoutrCtrl">
+
+    <h2 class="firsth2">Specify a location and radius to search</h2>
+    <div class="searchBoxes">
+        <div class="contact-form__item addressInput">
+            <label class="contact-form__label">Enter any location, address, or city.</label>
+            <input type="text" name="address" placeholder="Required" class="contact-form__input address"
+                id="autocomplete" value="">
+        </div>
+        <div class="radius">
+            <label class="contact-form__label">Within</label>
+            <input type="text" name="radius" placeholder="Required" class="contact-form__input radius_ammount"
+                ng-value="10" id="radius">
+        </div>
+        <div class="units">
+            <label class="container">Kilometres
+                <input type="radio" value="km" name="units" checked>
+                <span class="checkmark"></span>
+            </label>
+            <label class="container">Miles
+                <input type="radio" value="mi" name="units">
+                <span class="checkmark"></span>
+            </label>
+
+        </div>
+    </div>
+
+
+
+    <h2>Fine-tune your search (optional)</h2>
+
+    <div class="contact-form__item">
+        <label class="contact-form__label">Comma seperated list (eg. Selfie, Cat, Dog)</label>
+        <input type="text" name="customFields" placeholder="eg. JavaScript, Python, Developer"
+            class="contact-form__input customFields">
+    </div>
+
+    <div class="contact-form__item submitloader">
+        <input type="submit" value="Search" class="button button--large" ng-click="search()">
+        <div class="loaders" ng-show="loaders"></div>
+    </div>
+
+    <div class="shareURL" ng-show="shareURLVisible">
+        <label class="contact-form__label">Share these results:</label>
+        <input type="text" ng-value="shareURL" class="contact-form__input">
+    </div>
+
+    <!-- Tweet Results -->
+    <div class="results grid">
+
+        <h2 ng-show="noresult" class="noresult">No results, try a different search.</h2>
+
+        <div class="tweet_card grid-item" ng-repeat="tweet in results" my-repeat-directive
+            ng-if="tweet.extended_entities.media[0].type == 'photo' || tweet.extended_entities.media[0].type == 'video'">
+
+
+            <!-- single image -->
+            <a href="#" data-featherlight="{{tweet.extended_entities.media[0].media_url_https}}"
+                ng-if="tweet.extended_entities.media[0].type == 'photo'">
+                <div class="tweet_media"
+                    style="background-image:url('{{tweet.extended_entities.media[0].media_url_https}}')">
+                </div>
+            </a>
+
+            <!-- single video -->
+            <a ng-href="{{variant.url}}"
+                ng-repeat="variant in tweet.extended_entities.media[0].video_info.variants | filter: {content_type: 'video/mp4'} | limitTo: 1"
+                data-featherlight-iframe-style="width:80vw; height:80vh" data-featherlight="iframe"
+                ng-if="tweet.extended_entities.media[0].type == 'video'">
+                <div class="tweet_media"
+                    style="background-image:url('{{tweet.extended_entities.media[0].media_url_https}}')"></div>
+            </a>
+
+            <!-- single image -->
+            <div class="extra_media" ng-if="tweet.extended_entities.media.length > 1">
+                <a href="#" data-featherlight="{{media.media_url_https}}"
+                    ng-repeat="media in tweet.extended_entities.media" ng-show="$index !== 0">
+                    <div class="tweet_tiny_media" style="background-image:url('{{media.media_url_https}}')">
+                    </div>
+                </a>
+            </div>
+
+
+
+            <!-- tweet users -->
+            <div class="tweet_user">
+                <div class="tweet_profilephoto"><a href="http://twitter.com/{{tweet.user.screen_name}}"
+                        target="_blank"><img ng-src="{{tweet.user.profile_image_url_https}}" width="30"></a></div>
+                <div class="tweet_username"><a href="http://twitter.com/{{tweet.user.screen_name}}"
+                        target="_blank">@{{tweet.user.screen_name}} {{tweet.extended_entities.media.length}}</a></div>
+                <div class="tweet_icon">
+                    <i class="fas {{tweet.extended_entities.media.length <= 1 ? 'fa-image' : 'fa-window-restore'}}"
+                        aria-hidden="true" ng-if="tweet.extended_entities.media[0].type == 'photo'"></i>
+                    <i class="fas fa-play" aria-hidden="true"
+                        ng-if="tweet.extended_entities.media[0].type == 'video'"></i>
+                </div>
+            </div>
+            <div class="tweet_info">
+                <a href="https://twitter.com/{{tweet.user.screen_name}}/statuses/{{tweet.id_str}}" target="_blank">
+                    <div class="tweet_text">{{tweet.full_text}}</div>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <hr />
+
+    <h3>Before you search</h3>
+
+    <p>Be aware that there could be sensative content. These results are not filtered.
+    </p>
+
+    <h3>How does this work?</h3>
+
+    <p>Twitter allows you to search for tweets via geolocation data such as latitude and longitude. Using these, we can
+        search for commonly tweeted terms at a specific location
+        within a radius.
+    </p>
+
+    <h3>Like this tool or have feedback?</h3>
+
+    <p>Please let me know at <a href="https://twitter.com/sudo_overflow" target="_blank">@sudo_oveflow</a>
+
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+<script>
+    var app = angular.module('scoutr', []);
+
+
+
+    // app.directive('myRepeatDirective', function () {
+    //     return function (scope, element, attrs) {
+    //         if (scope.$last) {
+    //             setTimeout(() => {
+    //             //     console.log("RUNNING MASONRY");
+    //             //     jQuery('.grid').masonry({
+    //             //         // options
+    //             //         itemSelector: '.grid-item',
+    //             //         columnWidth: 313
+    //             //     });
+    //             // }, 1000)
+
+    //         }
+    //     };
+    // })
+
+
+
+    app.filter('num', function () {
+        return function (input) {
+            return parseInt(input);
+        };
+    });
+
+
+    app.controller('scoutrCtrl', function ($scope, $http) {
+
+
+        // Handle Query
+        $(document).ready(function () {
+
+            $.extend({
+                getUrlVars: function () {
+                    var vars = [],
+                        hash;
+                    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+                    for (var i = 0; i < hashes.length; i++) {
+                        hash = hashes[i].split('=');
+                        vars.push(hash[0]);
+                        vars[hash[0]] = hash[1];
+                    }
+                    return vars;
+                },
+                getUrlVar: function (name) {
+                    return $.getUrlVars()[name];
+                }
+            });
+
+
+            $.getUrlVar('addr') ? $(".address").val(decodeURIComponent($.getUrlVar('addr'))) : "";
+
+            $.getUrlVar('rad') ? $(".radius_ammount").val(decodeURIComponent($.getUrlVar('rad'))) : "";
+
+            if ($.getUrlVar('uni') == 'km') {
+                $('input[value=km]').prop("checked", true);
+            } else if ($.getUrlVar('uni') == 'mi') {
+                $('input[value=mi]').prop("checked", true);
+            }
+
+            $.getUrlVar('q') ? $('.customFields').val(decodeURIComponent($.getUrlVar('q'))) : "";
+
+
+            if ($.getUrlVar('addr')) {
+                var geocoder = new google.maps.Geocoder();
+
+                geocoder.geocode({ 'address': decodeURIComponent($.getUrlVar('addr')) }, function (results, status) {
+                    if (status === 'OK') {
+                        console.log(results[0].geometry.location)
+                        map.panTo(results[0].geometry.location)
+                        map.setZoom(15);
+                        document.querySelector('.marker').style.display = 'block';
+                        latlng = `${results[0].geometry.location.lat()},${results[0].geometry.location.lng()}`
+                        console.log(latlng);
+                        $scope.search()
+                    } else {
+                        alert('Geocode was not successful for the following reason: ' + status);
+                    }
+                });
+            }
+
+
+        });
+
+        // Search 
+        $scope.search = function () {
+            $scope.results = "";
+
+            $scope.loaders = true;
+
+            if (latlng == undefined) {
+                alert("Please enter a location");
+                document.querySelector('#autocomplete').focus();
+                return
+            }
+
+            let searchTerms = [];
+            let customTermField = document.querySelector('input[name=customFields]').value;
+
+            let latlngrad = `${latlng},${document.querySelector("#radius").value}${$("input[name=units]:checked").val()}`;
+
+
+            // Gather custom terms
+            if (customTermField != "") {
+                customTermField.split(',').map(function (item) {
+                    searchTerms.push(`"${item.trim()}"`);
+                    searchTerms.push("OR");
+                });
+            }
+
+            // Remove last OR
+            searchTerms[searchTerms.length - 1] = "";
+
+            console.log(encodeURIComponent(searchTerms.toString().replace(/,/g, '')));
+
+            // Start searching 
+            $http({
+                method: 'GET',
+                url: `https://scoutr-api.herokuapp.com/?q=${encodeURIComponent(searchTerms.toString().replace(/,/g, ''))}&geo=${latlngrad}`
+            }).then(function successCallback(response) {
+                console.log(response.data.statuses.length)
+                if (response.data.statuses.length != 0) {
+                    $scope.results = response.data.statuses;
+                    $scope.noresult = false;
+                } else {
+                    $scope.noresult = true;
+                }
+                $scope.loaders = false;
+                console.log(response)
+            }, function errorCallback(response) {
+                alert(response)
+            })
+            //let searchString = `https://twitter.com/search?q=geocode:${latlngrad}${encodeURIComponent(searchTerms.toString().replace(/,/g, ''))}&src=typed_query&f=live`
+            $scope.shareURLVisible = true;
+
+            $scope.shareURL = `https://cyris.io/scoutr?q=${encodeURIComponent(document.querySelector('.customFields').value)}&addr=${encodeURIComponent(document.querySelector(".address").value)}&rad=${encodeURIComponent(document.querySelector(".radius_ammount").value)}&uni=${encodeURIComponent(document.querySelector('input[name=units]:checked').value)}`
+            //window.open(searchString);
+            //console.log(searchString);
+
+        }
+    });
+
+
+
+
+
+
+</script>
+
+<script>
+    var map, places, latlng;
+    var autocomplete;
+
+    function initMap() {
+
+        if (!$('.marker').length) {
+            $('.hero').append(`<div class="marker animated bounceInDown" style="display:none"><span class="pulse"></span></div>`)
+        }
+
+        map = new google.maps.Map(document.querySelector('.hero__image'), {
+            zoom: 1,
+            center: { lat: 0, lng: 0 },
+            draggable: false,
+            scrollwheel: false,
+            mapTypeControl: false,
+            panControl: false,
+            zoomControl: false,
+            streetViewControl: false,
+            styles: [
+                {
+                    "featureType": "administrative",
+                    "elementType": "labels.text.fill",
+                    "stylers": [
+                        {
+                            "color": "#444444"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "landscape",
+                    "elementType": "all",
+                    "stylers": [
+                        {
+                            "color": "#f2f2f2"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "poi",
+                    "elementType": "all",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "road",
+                    "elementType": "all",
+                    "stylers": [
+                        {
+                            "saturation": -100
+                        },
+                        {
+                            "lightness": 45
+                        }
+                    ]
+                },
+                {
+                    "featureType": "road.highway",
+                    "elementType": "all",
+                    "stylers": [
+                        {
+                            "visibility": "simplified"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "road.arterial",
+                    "elementType": "labels.icon",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "transit",
+                    "elementType": "all",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "water",
+                    "elementType": "all",
+                    "stylers": [
+                        {
+                            "color": "#505a65"
+                        },
+                        {
+                            "visibility": "on"
+                        }
+                    ]
+                }
+            ]
+        });
+
+        autocomplete = new google.maps.places.Autocomplete(
+                  /** @type {!HTMLInputElement} */(
+                document.getElementById('autocomplete')), {
+        });
+        places = new google.maps.places.PlacesService(map);
+        autocomplete.addListener('place_changed', onPlaceChanged);
+    }
+
+    function onPlaceChanged() {
+        document.querySelector('.marker').style.display = 'none';
+        var place = autocomplete.getPlace();
+
+        console.log(place);
+
+        if (place.geometry) {
+            map.panTo(place.geometry.location);
+            let lat = place.geometry.location.lat();
+            let lng = place.geometry.location.lng();
+
+            latlng = `${lat},${lng}`
+
+            document.querySelector('.marker').style.display = 'block';
+            map.setZoom(15)
+        } else {
+            document.getElementById('autocomplete').placeholder = 'Enter any location, address, or city.';
+        }
+    }
+
+
+</script>
+<!-- <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script> -->
+<script src="//cdn.jsdelivr.net/npm/featherlight@1.7.14/release/featherlight.min.js" type="text/javascript"
+    charset="utf-8"></script>
+<script type="text/javascript"
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDEFA-GSUCKPCFaHPfO_lP6r3UGuHJXY9k&libraries=places&callback=initMap"></script>

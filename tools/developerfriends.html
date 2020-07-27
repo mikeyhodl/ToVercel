@@ -1,0 +1,604 @@
+---
+layout: page
+title: Developer Friends
+subtitle: Use Twitter's advanced search operators to find local developers tweeting near you.
+permalink: /developerfriends/
+featured_image: /images/demo/contact.jpg
+---
+
+<link rel="stylesheet" href="/css/animate.css">
+<style>
+    .firsth2 {
+        margin-top: 0px;
+    }
+
+    #map {
+        width: 100%;
+        height: 300px;
+    }
+
+    .searchBoxes {
+        width: 100%;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+
+    .radius {
+        width: 10%;
+    }
+
+    .addressInput {
+        width: 68%;
+    }
+
+    /* The container */
+    .container {
+        display: block;
+        position: relative;
+        padding-left: 35px;
+        margin: 20px 20px 20px 0px;
+        cursor: pointer;
+        font-size: 22px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /* Hide the browser's default checkbox */
+    .container input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+    /* Create a custom checkbox */
+    .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 25px;
+        width: 25px;
+        background-color: #eee;
+    }
+
+    /* On mouse-over, add a grey background color */
+    .container:hover input~.checkmark {
+        background-color: #ccc;
+    }
+
+    /* When the checkbox is checked, add a blue background */
+    .container input:checked~.checkmark {
+        background-color: #2196F3;
+    }
+
+    /* Create the checkmark/indicator (hidden when not checked) */
+    .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+    }
+
+    /* Show the checkmark when checked */
+    .container input:checked~.checkmark:after {
+        display: block;
+    }
+
+    /* Style the checkmark/indicator */
+    .container .checkmark:after {
+        left: 9px;
+        top: 5px;
+        width: 5px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 3px 3px 0;
+        -webkit-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        transform: rotate(45deg);
+    }
+
+    .terms {
+        display: flex;
+
+        flex-wrap: wrap;
+        width: 100%;
+        justify-content: space-evenly;
+        margin-top: 30px;
+    }
+
+    .mapContainer {
+        position: relative;
+        overflow: hidden;
+        margin-top: 40px;
+    }
+
+    .marker {
+        position: absolute;
+        z-index: 2;
+        left: 50%;
+        top: 50%;
+        margin-left: -12px;
+        margin-top: -27px;
+        display: none;
+    }
+
+    .pulse {
+        display: block;
+        width: 22px;
+        height: 22px;
+        border-radius: 100% 100% 0% 100%;
+        background: #3498db;
+        cursor: pointer;
+        box-shadow: 0 0 0 0 rgba(46, 46, 45, 0.4);
+        animation: pulse 3s infinite;
+        transform: rotate(45deg);
+    }
+
+    .units .container {
+        margin: 8px 20px 8px 0px;
+    }
+
+    .selectControls {
+        float: right;
+        margin-right: 25px;
+    }
+
+    .selectControls span:hover {
+        cursor: pointer;
+        color: #2196F3;
+    }
+
+    @media only screen and (max-width: 800px) {
+        .searchBoxes {
+            width: 100%;
+            display: block;
+            margin-top: 20px;
+        }
+
+        .radius {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .addressInput {
+            width: 100%;
+        }
+
+        .selectControls {
+            float: none;
+            margin-right: 0px;
+            text-align: center;
+            width: 100%;
+            margin: 30px 0px 20px 0px;
+        }
+    }
+
+    @-webkit-keyframes pulse {
+        0% {
+            -webkit-box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4);
+        }
+
+        70% {
+            -webkit-box-shadow: 0 0 0 300px rgba(52, 152, 219, 0);
+        }
+
+        100% {
+            -webkit-box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+        }
+    }
+
+    @keyframes pulse {
+        0% {
+            -moz-box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4);
+            box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4);
+        }
+
+        70% {
+            -moz-box-shadow: 0 0 0 300px rgba(52, 152, 219, 0);
+            box-shadow: 0 0 0 300px rgba(52, 152, 219, 0);
+        }
+
+        100% {
+            -moz-box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+            box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+        }
+    }
+</style>
+
+<h2 class="firsth2">Specify a location and radius to search</h2>
+<div class="searchBoxes">
+    <div class="contact-form__item addressInput">
+        <label class="contact-form__label">Enter any location, address, or city.</label>
+        <input type="text" name="address" placeholder="Required" class="contact-form__input" id="autocomplete">
+    </div>
+    <div class="radius">
+        <label class="contact-form__label">Within</label>
+        <input type="text" name="radius" placeholder="Required" class="contact-form__input" value="10" id="radius">
+    </div>
+    <div class="units">
+        <label class="container">Kilometres
+            <input type="radio" value="km" name="units" checked>
+            <span class="checkmark"></span>
+        </label>
+        <label class="container">Miles
+            <input type="radio" value="mi" name="units">
+            <span class="checkmark"></span>
+        </label>
+
+    </div>
+</div>
+
+<div class="mapContainer">
+    <div class="marker animated bounceInDown">
+        <span class="pulse"></span>
+    </div>
+    <div id="map"></div>
+</div>
+
+<h2>Select some popular search terms</h2>
+<div class="selectControls" style="float:right"><span onclick="selectAll()">Select All</span> / <span
+        onclick="deselectAll()">Deselect All</span></div>
+<div class="terms">
+    <label class="container">Developer
+        <input type="checkbox" value="Developer" name="tags">
+        <span class="checkmark"></span>
+    </label>
+    <label class="container">Programmer
+        <input type="checkbox" value="Programmer" name="tags">
+        <span class="checkmark"></span>
+    </label>
+    <label class="container">Coding
+        <input type="checkbox" value="Coding" name="tags">
+        <span class="checkmark"></span>
+    </label>
+    <label class="container">Programming
+        <input type="checkbox" value="Programming" name="tags">
+        <span class="checkmark"></span>
+    </label>
+    <label class="container">Code
+        <input type="checkbox" value="Code" name="tags">
+        <span class="checkmark"></span>
+    </label>
+    <label class="container">JavaScript
+        <input type="checkbox" value="JavaScript" name="tags">
+        <span class="checkmark"></span>
+    </label>
+    <label class="container">Frontend
+        <input type="checkbox" value="Frontend" name="tags">
+        <span class="checkmark"></span>
+    </label>
+    <label class="container">Backend
+        <input type="checkbox" value="Backend" name="tags">
+        <span class="checkmark"></span>
+    </label>
+    <label class="container">Python
+        <input type="checkbox" value="Python" name="tags">
+        <span class="checkmark"></span>
+    </label>
+    <label class="container">PHP
+        <input type="checkbox" value="PHP" name="tags">
+        <span class="checkmark"></span>
+    </label>
+    <label class="container">#100DaysOfCode
+        <input type="checkbox" value="#100DaysOfCode" name="tags">
+        <span class="checkmark"></span>
+    </label>
+    <label class="container">Wordpress
+        <input type="checkbox" value="Wordpress" name="tags">
+        <span class="checkmark"></span>
+    </label>
+</div>
+
+<h2>Add your own</h2>
+
+<div class="contact-form__item">
+    <label class="contact-form__label">Comma seperated list (eg. JavaScript, Python, Developer)</label>
+    <input type="text" name="customFields" placeholder="eg. JavaScript, Python, Developer" class="contact-form__input">
+</div>
+
+<div class="contact-form__item">
+    <input type="submit" value="Search" class="button button--large" onclick="search()">
+</div>
+
+<hr />
+
+<h3>How does this work?</h3>
+
+<p>Twitter allows you to search for tweets via geolocation data such as latitude and longitude. Using these, we can
+    search for commonly tweeted terms at a specific location
+    within a radius.
+</p>
+
+<h3>What happens when I search?</h3>
+
+<p>You will be redirected to Twitter with your customized search query. Everyone you see in the timeline will be within
+    your specified location and radius.
+</p>
+
+<h3>Like this tool or have feedback?</h3>
+
+<p>Please let me know at <a href="https://twitter.com/sudo_overflow" target="_blank">@sudo_oveflow</a>
+
+
+
+    <script>
+        var map, places, latlng;
+        var autocomplete;
+
+        function initMap() {
+
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 1,
+                center: { lat: 0, lng: 0 },
+                draggable: false,
+                scrollwheel: false,
+                mapTypeControl: false,
+                panControl: false,
+                zoomControl: false,
+                streetViewControl: false,
+                styles: [
+                    {
+                        "featureType": "water",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#e9e9e9"
+                            },
+                            {
+                                "lightness": 17
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "landscape",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#f5f5f5"
+                            },
+                            {
+                                "lightness": 20
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.highway",
+                        "elementType": "geometry.fill",
+                        "stylers": [
+                            {
+                                "color": "#ffffff"
+                            },
+                            {
+                                "lightness": 17
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.highway",
+                        "elementType": "geometry.stroke",
+                        "stylers": [
+                            {
+                                "color": "#ffffff"
+                            },
+                            {
+                                "lightness": 29
+                            },
+                            {
+                                "weight": 0.2
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.arterial",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#ffffff"
+                            },
+                            {
+                                "lightness": 18
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.local",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#ffffff"
+                            },
+                            {
+                                "lightness": 16
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#f5f5f5"
+                            },
+                            {
+                                "lightness": 21
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi.park",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#dedede"
+                            },
+                            {
+                                "lightness": 21
+                            }
+                        ]
+                    },
+                    {
+                        "elementType": "labels.text.stroke",
+                        "stylers": [
+                            {
+                                "visibility": "on"
+                            },
+                            {
+                                "color": "#ffffff"
+                            },
+                            {
+                                "lightness": 16
+                            }
+                        ]
+                    },
+                    {
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "saturation": 36
+                            },
+                            {
+                                "color": "#333333"
+                            },
+                            {
+                                "lightness": 40
+                            }
+                        ]
+                    },
+                    {
+                        "elementType": "labels.icon",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit",
+                        "elementType": "geometry",
+                        "stylers": [
+                            {
+                                "color": "#f2f2f2"
+                            },
+                            {
+                                "lightness": 19
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "administrative",
+                        "elementType": "geometry.fill",
+                        "stylers": [
+                            {
+                                "color": "#fefefe"
+                            },
+                            {
+                                "lightness": 20
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "administrative",
+                        "elementType": "geometry.stroke",
+                        "stylers": [
+                            {
+                                "color": "#fefefe"
+                            },
+                            {
+                                "lightness": 17
+                            },
+                            {
+                                "weight": 1.2
+                            }
+                        ]
+                    }
+                ]
+            });
+
+            autocomplete = new google.maps.places.Autocomplete(
+                  /** @type {!HTMLInputElement} */(
+                    document.getElementById('autocomplete')), {
+            });
+            places = new google.maps.places.PlacesService(map);
+            autocomplete.addListener('place_changed', onPlaceChanged);
+        }
+
+        function onPlaceChanged() {
+            var place = autocomplete.getPlace();
+
+            if (place.geometry) {
+                map.panTo(place.geometry.location);
+                let lat = place.geometry.location.lat();
+                let lng = place.geometry.location.lng();
+
+                latlng = `${lat},${lng}`
+
+                // var marker = new google.maps.Marker({
+                //     "map": map,
+                //     "position": { lat: lat, lng: lng },
+                // });
+                document.querySelector('.marker').style.display = 'block';
+                map.setZoom(15)
+            } else {
+                document.getElementById('autocomplete').placeholder = 'Enter any location, address, or city.';
+            }
+        }
+
+    </script>
+
+    <script>
+        function search() {
+
+            if (latlng == undefined) {
+                alert("Please enter a location");
+                document.querySelector('#autocomplete').focus();
+                return
+            }
+
+            let searchTerms = [];
+            let customTermField = document.querySelector('input[name=customFields]').value;
+
+            let latlngrad = `${latlng},${document.querySelector("#radius").value}${$("input[name=units]:checked").val()}`;
+
+            // Gather checkboxes
+            $("input:checkbox[name=tags]:checked").each(function () {
+                searchTerms.push(` "${$(this).val()}" `);
+                searchTerms.push("OR")
+            });
+
+
+            // Gather custom terms
+            if (customTermField != "") {
+                customTermField.split(',').map(function (item) {
+                    searchTerms.push(` "${item.trim()}" `);
+                    searchTerms.push("OR");
+                });
+            }
+
+            // Remove last OR
+            searchTerms[searchTerms.length - 1] = "";
+
+            // build search string 
+            let searchString = `https://twitter.com/search?q=geocode:${latlngrad}${encodeURIComponent(searchTerms.toString().replace(/,/g, ''))}&src=typed_query&f=live`
+            window.open(searchString);
+            console.log(searchString);
+
+        }
+
+        function selectAll() {
+            $("input:checkbox[name=tags]").attr('checked', true);
+        }
+
+        function deselectAll() {
+            $("input:checkbox[name=tags]").attr('checked', false);
+        }
+
+
+    </script>
+
+    <script type="text/javascript"
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDEFA-GSUCKPCFaHPfO_lP6r3UGuHJXY9k&libraries=places&callback=initMap"></script>

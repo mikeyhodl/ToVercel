@@ -1,0 +1,142 @@
+---
+layout: default
+featured_image: /images/home.jpg
+---
+
+<section class="hero hero--single">
+    <div id="particles-js"></div>
+    <div class="hero__image" style="background-image: url({{ page.featured_image | relative_url }})">
+        <div class="hero__overlay"></div>
+    </div>
+
+    <div class="wrap mainpage">
+
+        <h1 id="header"></h1>
+        <p id="subheader"></p>
+        <div id="headerSocial" style="display:none;">{% include socials.html %}</div>
+
+    </div>
+
+</section>
+
+<section class="listing">
+
+    <div class="wrap">
+
+        {% for project in site.projects reversed %}
+
+        <article class="post">
+
+            <div class="post__image-wrap">
+                <div class="post__image" style="background-image: url({{ project.featured_image | relative_url }})">
+                </div>
+            </div>
+
+            <div class="post__content-wrap">
+                <div class="post__content verticalFlex">
+                    <div>
+                        <h2 class="post__title"><a href="{{ project.url | relative_url }}">{{ project.title }}</a></h2>
+                        <p class="post__subtitle">{{ project.subtitle }}</p>
+                        <p class="post__description">{{ project.description }}</p>
+                    </div>
+                    <div>
+                        <a href="{{ project.url | relative_url }}">See more</a>
+                        <div>
+                        </div>
+                    </div>
+
+        </article>
+
+        {% endfor %}
+
+    </div>
+
+    <script>
+
+        var header = document.getElementById('header');
+        var subheader = document.getElementById('subheader');
+
+        var typewriter = new Typewriter(header, {
+            loop: false
+        });
+
+        var typewriter2 = new Typewriter(subheader, {
+            loop: false
+        });
+
+        let header1 = "Hey there, I'm Mike.";
+        let header2 = "I'm a Web developer.";
+        let header3 = "Maker.";
+        let header4 = "And an enthusiast."
+        let header5 = "Check out my work.";
+
+        let subHeader1 = "Nice to meet you.";
+        let subHeader2 = "Javascript, NodeJS, HTML, CSS, Email and Digital Marketing.";
+        let subHeader3 = "3D Printing, Raspberry Pi, Arduino, ESP8266.";
+        let subHeader4 = "Learning how to protect myself and others.";
+        let subHeader5 = "Check out my work, and blog.";
+
+        let typingSpeed = 10;
+        let deleteSpeed = 1;
+        let pauseDelay = 3000;
+
+        function subtyping(string) {
+            typewriter2
+                .changeDelay(typingSpeed)
+                .typeString(string)
+                .start();
+        }
+
+        function subdelete() {
+            typewriter2
+                .deleteAll(1)
+                .start();
+        }
+
+        function finaltype() {
+            jQuery('#subheader').hide();
+            jQuery('#headerSocial').fadeIn();
+        }
+
+        function typing() {
+
+            typewriter
+                .changeDelay(typingSpeed)
+                .changeDeleteSpeed(deleteSpeed)
+
+                .typeString(header1)
+                .callFunction(function () { subtyping(subHeader1) })
+                .pauseFor(pauseDelay)
+                .callFunction(function () { subdelete() })
+                .pauseFor(subHeader1.length * deleteSpeed)
+                .deleteChars(21)
+
+                .typeString(header2)
+                .callFunction(function () { subtyping(subHeader2) })
+                .pauseFor(pauseDelay)
+                .callFunction(function () { subdelete() })
+                .pauseFor(subHeader2.length * deleteSpeed)
+                .deleteChars(19)
+
+                .typeString(header3)
+                .callFunction(function () { subtyping(subHeader3) })
+                .pauseFor(pauseDelay)
+                .callFunction(function () { subdelete() })
+                .pauseFor(subHeader3.length * deleteSpeed)
+                .deleteChars(7)
+
+                .typeString(header4)
+                .callFunction(function () { subtyping(subHeader4) })
+                .pauseFor(pauseDelay)
+                .callFunction(function () { subdelete() })
+                .pauseFor(subHeader4.length * deleteSpeed)
+                .deleteAll(1)
+
+                .typeString(header5)
+                .callFunction(function () { finaltype() })
+                .start();
+        }
+
+        typing();
+    </script>
+</section>
